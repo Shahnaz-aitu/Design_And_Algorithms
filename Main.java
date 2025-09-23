@@ -1,43 +1,63 @@
-package algo;
-
 import algo.metrics.Metrics;
 import algo.sort.MergeSort;
 import algo.sort.QuickSort;
 import algo.select.DeterministicSelect;
 import algo.geometry.ClosestPair;
 import algo.geometry.ClosestPair.Point;
+import algo.CsvWriter;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Random;
 
 public class Main {
     public static void main(String[] args) {
-        Metrics m = new Metrics();
+        try (CsvWriter csv = new CsvWriter("results.csv")) {
+            csv.writeRow("algorithm", "n", "comparisons", "depth", "allocations", "timeMillis");
 
-        // Пример: MergeSort
-        int[] arr = {5,3,8,4,2,7};
-        MergeSort.sort(arr, m);
-        System.out.println("MergeSort result: " + Arrays.toString(arr) + " | depth=" + m.maxDepth);
+            int[] sizes = {100, 500, 1000, 5000, 10000}; // размеры входа
+            Random rnd = new Random();
 
-        // Пример: QuickSort
-        m.reset();
-        int[] arr2 = {9,1,5,3,7,4,8};
-        QuickSort.sort(arr2, m);
-        System.out.println("QuickSort result: " + Arrays.toString(arr2) + " | depth=" + m.maxDepth);
+            for (int n : sizes) {
+                int[] arr = rnd.ints(n, 0, 100000).toArray();
+                Metrics m = new Metrics();
 
-        // Пример: Select
-        m.reset();
-        int[] arr3 = {12,5,7,3,19,1,2,6};
-        int k = 3;
-        int kth = DeterministicSelect.select(arr3, k, m);
-        System.out.println(k+"-th smallest = " + kth);
+                // MergeSort
+                int[] copy1 = Arrays.copyOf(arr, arr.length);
+                long t1 = System.currentTimeMillis();
+                MergeSort.sort(copy1, m);
+                long t2 = System.currentTimeMillis();
+                csv.writeRow("MergeSort", n, m.comparisons, m.maxDepth, m.allocations, (t2 - t1));
 
-        // Пример: Closest Pair
-        m.reset();
-        Point[] pts = {
-                new Point(0,0), new Point(5,5), new Point(3,4),
-                new Point(7,1), new Point(2,2), new Point(9,6)
-        };
-        double dist = ClosestPair.closestPair(pts, m);
-        System.out.println("Closest pair distance = " + dist);
+                // QuickSort
+                m.reset();
+                int[] copy2 = Arrays.copyOf(arr, arr.length);
+                t1 = System.currentTimeMillis();
+                QuickSort.sort(copy2, m);
+                t2 = System.currentTimeMillis();
+                csv.writeRow("QuickSort", n, m.comparisons, m.maxDepth, m.allocations, (t2 - t1));
+
+                // DeterministicSelect (ищем k-й элемент)
+                m.reset();
+                int[] copy3 = Arrays.copyOf(arr, arr.length);
+                int k = n / 2;
+                t1 = System.currentTimeMillis();
+                int kth = DeterministicSelect.select(copy3, k, m);
+                t2 = System.currentTimeMillis();
+                csv.writeRow("DeterministicSelect", n, m.comparisons, m.maxDepth, m.allocations, (t2 - t1));
+
+                // Closest Pair
+                m.reset();
+                Point[] pts = new Point[n];
+                for (int i = 0; i < n; i++) {
+                    pts[i] = new Point(rnd.nextInt(100000), rnd.nextInt(100000));
+                }
+                t1 = System.currentTimeMillis();
+                double dist = ClosestPair.closestPair(pts, m);
+                t2 = System.currentTimeMillis();
+                csv.writeRow("ClosestPair", n, m.comparisons, m.maxDepth, m.allocations, (t2 - t1));
+            }
+
+            System.out.println("✅ Results written to results.csv");
+        }
     }
 }
