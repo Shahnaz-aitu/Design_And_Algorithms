@@ -1,10 +1,12 @@
+package algo;
+
 import algo.metrics.Metrics;
 import algo.sort.MergeSort;
 import algo.sort.QuickSort;
 import algo.select.DeterministicSelect;
 import algo.geometry.ClosestPair;
 import algo.geometry.ClosestPair.Point;
-import algo.CsvWriter;
+import algo.util.CsvWriter;
 
 import java.util.Arrays;
 import java.util.Random;

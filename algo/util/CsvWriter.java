@@ -1,4 +1,4 @@
-package algo;
+package algo.util;
 
 import java.io.FileWriter;
 import java.io.IOException;
